@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InterviewAI</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div id="screen-home" class="screen active">
+  <nav>
+    <div class="logo">
+      <img src="Skill_view.png" alt="Logo" class="logo-img" />
+      <span class="brand-name">InterviewAI</span>
+    </div>
+    <button onclick="showScreen('history')">History</button>
+  </nav>
+
+  <div class="home-body">
+    <div class="tag">Practice Tool</div>
+    <h1>Get better at <span class="highlight">interviews.</span></h1>
+    <p class="subtitle">Real-time feedback on how you speak — pace, filler words, eye contact, and confidence.</p>
+    <button class="btn-main" onclick="showScreen('setup')">Start Practicing</button>
+
+    <div class="stats-bar">
+      <div class="stat">
+        <span id="totalSessions">0</span>
+        <small>Sessions</small>
+      </div>
+      <div class="divider"></div>
+      <div class="stat">
+        <span id="avgScore">—</span>
+        <small>Avg Score</small>
+      </div>
+      <div class="divider"></div>
+      <div class="stat">
+        <span id="bestScore">—</span>
+        <small>Best Score</small>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- SETUP PAGE -->
+<div id="screen-setup" class="screen">
+  <nav>
+    <div class="logo">
+      <img src="Skill_view.png" alt="Logo" class="logo-img" />
+      <span class="brand-name">InterviewAI</span>
+    </div>
+    <button onclick="showScreen('home')">Back</button>
+  </nav>
+
+  <div class="setup-body">
+    <div class="setup-col">
+      <div class="step-label">01 — Pick a question</div>
+      <div id="questionGrid"></div>
+    </div>
+
+    <div class="setup-col">
+      <div class="step-label">02 — Set duration</div>
+
+      <div class="duration-row">
+        <div class="dur-card" onclick="pickDuration(1, this)">
+          <div class="dur-num">1</div>
+          <div class="dur-unit">min</div>
+        </div>
+        <div class="dur-card selected" onclick="pickDuration(2, this)">
+          <div class="dur-num">2</div>
+          <div class="dur-unit">min</div>
+        </div>
+        <div class="dur-card" onclick="pickDuration(3, this)">
+          <div class="dur-num">3</div>
+          <div class="dur-unit">min</div>
+        </div>
+      </div>
+
+      <div class="tips-box">
+        <p class="tips-title">Before you start</p>
+        <p>Look at the camera lens, not your screen</p>
+        <p>Speak at a steady, calm pace</p>
+        <p>Avoid "um", "like" — pause instead</p>
+        <p>Sit straight and keep your head level</p>
+      </div>
+
+      <button class="btn-main full-width" id="startBtn" onclick="startInterview()">Launch Session</button>
+    </div>
+  </div>
+</div>
+
+<!-- INTERVIEW PAGE -->
+<div id="screen-interview" class="screen">
+  <nav>
+    <div class="logo">
+      <img src="Skill_view.png" alt="Logo" class="logo-img" />
+      <span class="brand-name">InterviewAI</span>
+    </div>
+    <div class="live-badge"><span class="live-dot"></span> Live</div>
+  </nav>
+
+  <div class="interview-layout">
+    <div class="camera-area">
+      <video id="videoEl" autoplay muted playsinline></video>
+      <canvas id="overlayCanvas"></canvas>
+
+      <div class="cam-top-bar">
+        <div class="rec-badge"><span class="rec-dot"></span> REC</div>
+        <div class="timer" id="timerDisplay">00:00</div>
+      </div>
+
+      <div class="cam-bottom-bar">
+        <p id="liveQuestionText"></p>
+      </div>
+    </div>
+
+    <div class="side-panel">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('metrics', this)">Metrics</button>
+        <button class="tab" onclick="switchTab('transcript', this)">Transcript</button>
+      </div>
+
+      <div id="micStatus" class="mic-label">Mic inactive</div>
+
+      <div id="tab-metrics" class="tab-content active">
+        <div class="metric">
+          <span class="metric-name">Words / Min</span>
+          <span class="metric-val" id="liveWPM">—</span>
+        </div>
+        <div class="metric">
+          <span class="metric-name">Filler Words</span>
+          <span class="metric-val" id="liveFillers">0</span>
+        </div>
+        <div class="metric">
+          <span class="metric-name">Words Said</span>
+          <span class="metric-val" id="liveWords">0</span>
+        </div>
+        <div class="metric">
+          <span class="metric-name">Eye Contact</span>
+          <span class="metric-val" id="liveEyeContact">—</span>
+        </div>
+        <div class="metric">
+          <span class="metric-name">Head Position</span>
+          <span class="metric-val" id="livePosture">Detecting...</span>
+        </div>
+        <div class="metric">
+          <span class="metric-name">Time Left</span>
+          <span class="metric-val" id="liveTimeLeft">—</span>
+        </div>
+      </div>
+
+      <div id="tab-transcript" class="tab-content">
+        <div id="transcriptBox">Start speaking...</div>
+      </div>
+
+      <button class="btn-stop" onclick="stopInterview()">Stop and Analyse</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS PAGE -->
+<div id="screen-results" class="screen">
+  <nav>
+    <div class="logo">
+      <img src="Skill_view.png" alt="Logo" class="logo-img" />
+      <span class="brand-name">InterviewAI</span>
+    </div>
+    <button onclick="showScreen('home')">Home</button>
+  </nav>
+
+  <div class="results-body">
+
+    <div class="results-top">
+      <div>
+        <p class="done-label">Session Complete</p>
+        <h2 id="resultsQTitle"></h2>
+        <p id="resultsMeta" class="meta-text"></p>
+      </div>
+      <div class="donut-wrap">
+        <canvas id="scoreDonut" width="110" height="110"></canvas>
+        <p class="donut-label">Score</p>
+      </div>
+    </div>
+
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <div class="stat-val" id="r-wpm">—</div>
+        <div class="stat-name">Avg WPM</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="r-fillers">0</div>
+        <div class="stat-name">Filler Words</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="r-words">0</div>
+        <div class="stat-name">Words Said</div>
+      </div>
+      <div class="stat-card gold">
+        <div class="stat-val" id="r-eye">—</div>
+        <div class="stat-name">Eye Contact</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <p class="section-title">AI Feedback</p>
+      <div id="feedbackArea">
+        <div class="loading-box">
+          <div class="spinner"></div>
+          Analysing your response...
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <p class="section-title">Score Breakdown</p>
+      <div class="chart-box">
+        <canvas id="breakdownChart"></canvas>
+      </div>
+    </div>
+
+    <div id="screenshotsSection"></div>
+
+    <div class="result-buttons">
+      <button class="btn-main" onclick="showScreen('setup')">Practice Again</button>
+      <button onclick="showScreen('history')">View History</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- HISTORY PAGE -->
+<div id="screen-history" class="screen">
+  <nav>
+    <div class="logo">
+      <img src="Skill_view.png" alt="Logo" class="logo-img" />
+      <span class="brand-name">InterviewAI</span>
+    </div>
+    <button onclick="showScreen('home')">Home</button>
+  </nav>
+
+  <div class="history-body">
+    <h2>Past Sessions</h2>
+    <div id="historyList"></div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
